@@ -21,7 +21,7 @@ class Knygoslt(Source):
     name = "Knygos.lt"
     description = _("Parsiunčia knygų aprašymus iš Knygos.lt tinklapio")
     author = "Darau, blė"
-    version = (0, 0, 2)
+    version = (0, 0, 3)
     minimum_calibre_version = (3, 0, 0)
     
     capabilities = frozenset(['identify', 'cover'])
@@ -37,8 +37,8 @@ class Knygoslt(Source):
     
     list_result_x = "//h3[@class='result-title']/a"
     
-    details_author = "//p[@class='book_details']//a[@itemprop='author']"
-    details_publisher = "//p[@class='book_details']/a[@itemprop='publisher']"
+    details_author = "//p[@class='book_details']/span[@itemprop='author']/a/span[@itemprop='name']"
+    details_publisher = "//p[@itemprop='publisher']/a/span[@itemprop='name']"
     details_year = u"//p[@class='book_details' and text()[contains(., 'Išleista')]]"
     details_pages = "//p[@class='book_details']/span[@itemprop='numberOfPages']"
     details_isbn = "//p[@class='book_details']/span[@itemprop='isbn']"
@@ -47,8 +47,13 @@ class Knygoslt(Source):
     #details_tags = u"//div[@class='box_title']/h2[text()[contains(., 'Panašios prekes')]]/../../div[@class='box']/div/ul/li"
     details_tags = u"//div[@class='box_title']/h2[text()[contains(., 'Panašios prekės')]]/../../div[@class='box']/div/ul/li"
     
-    filter_parent_tags = ['AKCIJOS', 'KNYGŲ MUGĖS naujienos!', 'Metų knygos rinkimai 2018', 'Užrašų knygos ir kalendoriai',
-                          'Dovanų idėjos', 'Kanceliarinės prekės', 'Žaislai ir žaidimai', 'Žurnalai']
+    filter_parent_tags = [
+        'AKCIJOS',
+        'KNYGŲ MUGĖS naujienos!',
+        'Tik geriausios knygos virsta filmais!',
+        'Metų knygos rinkimai 2018',
+        'Užrašų knygos ir kalendoriai',
+        'Dovanų idėjos', 'Kanceliarinės prekės', 'Žaislai ir žaidimai', 'Žurnalai']
     
     clear_color = re.compile("color:\s*#[0-9a-f]+;?", re.IGNORECASE)
     clear_bg = re.compile("background:\s*#[0-9a-f]+;?", re.IGNORECASE)
@@ -66,15 +71,18 @@ class Knygoslt(Source):
     def identify(self, log, result_queue, abort, title=None, authors=None,
             identifiers={}, timeout=30):
         
+        url_list = [];
+        
         if identifiers and identifiers["isbn"]:
             log("identify:: gavom fakin ISBN:", identifiers["isbn"])
             url_list = self._get_urls(identifiers["isbn"], 1)
-        elif title:
+            
+        if title and len(url_list) == 0:
             book_name = ascii_filename(title).lower().replace(' ', '+').replace('-', '+').replace('--', '+').replace('_', '+').replace('.', '+').replace('++', '+')
             log("identify:: gavom title, query:", book_name)
             url_list = self._filter_urls(self._get_urls(book_name), title)
             
-        else:
+        if len(url_list) == 0:
             return None
         
         if abort.is_set():
@@ -310,12 +318,20 @@ if __name__ == '__main__': # tests
     test_identify_plugin(Knygoslt.name,
         [
             (# Knyga pagal viršelį
-                {'title':u'Tėvas Gorijo'},
-                [title_test(u'Tėvas Gorijo', exact=True)]
+                {'title':u'Helenos paslaptis'},
+                [title_test(u'Helenos paslaptis', exact=True)]
             ),
         ])
             
     '''
+            (# Knyga pagal viršelį
+                {'identifiers':{'isbn': '9955101296'}},
+                [title_test(u'Skaitmeninės sąmonės', exact=True)]
+            ),
+            (# Knyga pagal viršelį
+                {'title':u'Tėvas Gorijo'},
+                [title_test(u'Tėvas Gorijo', exact=True)]
+            ),
             (# Knyga pagal viršelį
                 {'title':'Helenos paslaptis'},
                 [title_test('Helenos paslaptis', exact=True),
