@@ -1,0 +1,40 @@
+{
+  "metatagai": [
+    {
+      "query": "Meil\u0117s romanai", 
+      "action": "replace", 
+      "match_type": "one_of", 
+      "replace": "Meil\u0117s romanas"
+    }, 
+    {
+      "query": "U\u017esienio autori\u0173 romanai", 
+      "action": "replace", 
+      "match_type": "one_of", 
+      "replace": "U\u017esienio ra\u0161ytojai"
+    }, 
+    {
+      "query": "Detektyvai, trileriai", 
+      "action": "split", 
+      "match_type": "matches", 
+      "replace": ","
+    }, 
+    {
+      "query": "Detektyvai", 
+      "action": "replace", 
+      "match_type": "one_of", 
+      "replace": "Detektyvas"
+    }, 
+    {
+      "query": "Psichologiniai trileriai", 
+      "action": "replace", 
+      "match_type": "one_of", 
+      "replace": "Psichologinis trileris"
+    }, 
+    {
+      "query": "trileriai", 
+      "action": "replace", 
+      "match_type": "one_of", 
+      "replace": "Trileris"
+    }
+  ]
+}
